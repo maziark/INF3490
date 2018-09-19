@@ -22,9 +22,13 @@ def createPopulation (populationSize, cities) :
 
         population.append((individual, fit))
 
+    return population
+
 def rankIndividuals (population):
     # Sort based on the fitness value
-    return population.sort(key=lambda x : x[1], reverse = True)
+    #print (population)
+    population.sort(key=lambda x : x[1], reverse = True)
+    return population
 
 
 def sumFitness (population):
@@ -33,12 +37,14 @@ def sumFitness (population):
 
 def randomSelection (population, eliteSize):
     eliteMembers = population[:eliteSize]
-    sizeOfRest = population - eliteSize
+    sizeOfRest = len(population) - eliteSize
 
     sumFit = sumFitness (population) 
 
     climate = random.random()
-    
+
+    print (climate, sumFit)
+
     selection = [x for x in population if x[1]/sumFit > climate]
     
     selection = eliteMembers + selection
@@ -53,7 +59,7 @@ def breed (individual_1, individual_2):
     startCut = min (cut_1, cut_2)
     endCut = max(cut_1, cut_2)
 
-    child = individual_1[startCut:endCut+1]
+    child = list(individual_1[startCut:endCut+1])
 
     # Need more Genes!
 
@@ -63,26 +69,27 @@ def breed (individual_1, individual_2):
     return child
 
 
-def repopulate (population, eliteSize):
+def repopulate (population, eliteSize = 0):
     # They will survive!
     elites = population[:eliteSize]
-
+    print ('pop : ', population)
     rest = population [eliteSize:]
-
+    
+    print (rest, elites)
     dates = random.choice (list (range(len(rest))), len(rest), replace = False)
 
     notElites = []
     for i in range (len(rest) - 1):
         child = breed(rest[i][0], rest[i+1][0])
-        notElites.append(child, 1000) # Just some value!
+        notElites.append((child, 1000)) # Just some value!
 
     return elites + notElites
 
 def UV (population):
     paths = [x[0] for x in population]
-    cancered = map (swap, paths)
-
-    population_new = [(x, fitness(evalTravel(x))) for x in cancered]
+    cancered = [swapStuff (p) for p in paths]
+    print (cancered[0])
+    population_new = [(x, fitness(x)) for x in cancered]
 
     return population_new
 
@@ -90,19 +97,23 @@ def evolution (population, eliteSize=0):
     rankIndividuals (population)
     selection = randomSelection (population, eliteSize)
     pre_UV = repopulate (selection, eliteSize)
-    post_UV = UV (population_new)
+    post_UV = UV (pre_UV)
     return post_UV
 
 def playGod (geneVariety, populationSize, eliteSize, iterations):
     DNA = genes(geneVariety)
     population = createPopulation (populationSize, DNA)
+    
+    #print (population)
 
+    rankIndividuals (population)
+    
     for i in range (iterations):
         population = evolution (population, eliteSize)
 
-    population = rankIndividuals (population)
+    #population = rankIndividuals (population)
 
     print (population[0][0], 1.0/population[0][1])
 
 
-playGod (10, 20, 3, 100)
+playGod (5, 20, 3, 100)
